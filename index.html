@@ -5,6 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Claude Code Viewer</title>
     <style>
+        /* ==================== 主题变量 ==================== */
+        :root {
+            /* 暗色主题（默认） */
+            --bg-primary: #1e1e1e;
+            --bg-secondary: #252526;
+            --bg-tertiary: #2d2d30;
+            --bg-hover: #37373d;
+            --bg-active: #094771;
+            
+            --border-color: #3e3e42;
+            --border-light: #555;
+            
+            --text-primary: #d4d4d4;
+            --text-secondary: #cccccc;
+            --text-muted: #858585;
+            
+            --accent-blue: #0e639c;
+            --accent-blue-hover: #1177bb;
+            --accent-cyan: #4fc3f7;
+            --accent-orange: #ce9178;
+            --accent-green: #4ec9b0;
+            --accent-success: #16825d;
+            
+            --message-user-bg: #1e3a5f;
+            --message-assistant-bg: #2d2d30;
+            --message-tool-bg: #2a2d2e;
+            --message-thinking-bg: #2a2520;
+            
+            --scrollbar-bg: #1e1e1e;
+            --scrollbar-thumb: #424242;
+            --scrollbar-thumb-hover: #4e4e4e;
+            
+            --modal-overlay: rgba(0, 0, 0, 0.7);
+            --modal-shadow: rgba(0, 0, 0, 0.5);
+            
+            --code-bg: #1e1e1e;
+            --code-text: #9cdcfe;
+            
+            --kbd-bg: #3e3e42;
+            --kbd-border: #555;
+        }
+        
+        /* 亮色主题 */
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f3f3f3;
+            --bg-tertiary: #e8e8e8;
+            --bg-hover: #d4d4d4;
+            --bg-active: #cce5ff;
+            
+            --border-color: #d4d4d4;
+            --border-light: #c4c4c4;
+            
+            --text-primary: #333333;
+            --text-secondary: #555555;
+            --text-muted: #888888;
+            
+            --accent-blue: #0066cc;
+            --accent-blue-hover: #0052a3;
+            --accent-cyan: #007acc;
+            --accent-orange: #c45d2e;
+            --accent-green: #008080;
+            --accent-success: #107c10;
+            
+            --message-user-bg: #e3f2fd;
+            --message-assistant-bg: #f5f5f5;
+            --message-tool-bg: #f0f7f7;
+            --message-thinking-bg: #fff8f0;
+            
+            --scrollbar-bg: #f3f3f3;
+            --scrollbar-thumb: #c4c4c4;
+            --scrollbar-thumb-hover: #a8a8a8;
+            
+            --modal-overlay: rgba(0, 0, 0, 0.5);
+            --modal-shadow: rgba(0, 0, 0, 0.3);
+            
+            --code-bg: #f5f5f5;
+            --code-text: #333333;
+            
+            --kbd-bg: #e8e8e8;
+            --kbd-border: #c4c4c4;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -13,10 +96,11 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: #1e1e1e;
-            color: #d4d4d4;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             height: 100vh;
             overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .container {
@@ -27,31 +111,39 @@
         /* 左侧边栏 */
         .sidebar {
             width: 260px;
-            background: #252526;
-            border-right: 1px solid #3e3e42;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .sidebar-header {
             padding: 16px;
-            border-bottom: 1px solid #3e3e42;
+            border-bottom: 1px solid var(--border-color);
+            transition: border-color 0.3s ease;
         }
 
         .sidebar-header h1 {
             font-size: 14px;
             font-weight: 600;
             margin-bottom: 12px;
-            color: #cccccc;
+            color: var(--text-secondary);
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .help-icon {
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .icon-btn {
             width: 20px;
             height: 20px;
-            background: #3e3e42;
+            background: var(--bg-tertiary);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -59,17 +151,18 @@
             font-size: 12px;
             cursor: pointer;
             transition: background 0.2s;
-            color: #cccccc;
+            color: var(--text-secondary);
+            border: none;
         }
 
-        .help-icon:hover {
-            background: #505050;
+        .icon-btn:hover {
+            background: var(--bg-hover);
         }
 
         .upload-btn {
             width: 100%;
             padding: 8px 12px;
-            background: #0e639c;
+            background: var(--accent-blue);
             color: white;
             border: none;
             border-radius: 4px;
@@ -79,7 +172,15 @@
         }
 
         .upload-btn:hover {
-            background: #1177bb;
+            background: var(--accent-blue-hover);
+        }
+
+        .clipboard-btn {
+            background: var(--accent-success);
+        }
+
+        .clipboard-btn:hover {
+            background: #1a9f6d;
         }
 
         .session-list {
@@ -91,7 +192,7 @@
         .session-item {
             padding: 10px 12px;
             margin-bottom: 4px;
-            background: #2d2d30;
+            background: var(--bg-tertiary);
             border-radius: 4px;
             cursor: pointer;
             font-size: 13px;
@@ -99,16 +200,16 @@
         }
 
         .session-item:hover {
-            background: #37373d;
+            background: var(--bg-hover);
         }
 
         .session-item.active {
-            background: #094771;
+            background: var(--bg-active);
         }
 
         .session-item .session-id {
             font-weight: 500;
-            color: #cccccc;
+            color: var(--text-secondary);
             margin-bottom: 4px;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -117,7 +218,7 @@
 
         .session-item .session-time {
             font-size: 11px;
-            color: #858585;
+            color: var(--text-muted);
         }
 
         /* 右侧内容区 */
@@ -130,17 +231,18 @@
 
         .content-header {
             padding: 16px 20px;
-            border-bottom: 1px solid #3e3e42;
-            background: #252526;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .content-header h2 {
             font-size: 16px;
             font-weight: 600;
-            color: #cccccc;
+            color: var(--text-secondary);
         }
 
         .thinking-toggle {
@@ -148,7 +250,7 @@
             align-items: center;
             gap: 8px;
             font-size: 13px;
-            color: #cccccc;
+            color: var(--text-secondary);
             cursor: pointer;
             user-select: none;
         }
@@ -169,7 +271,7 @@
             align-items: center;
             justify-content: center;
             height: 100%;
-            color: #858585;
+            color: var(--text-muted);
         }
 
         .empty-state-icon {
@@ -187,35 +289,36 @@
             padding: 16px;
             border-radius: 8px;
             max-width: 100%;
+            transition: background-color 0.3s ease;
         }
 
         .message.user {
-            background: #1e3a5f;
+            background: var(--message-user-bg);
             margin-left: auto;
             margin-right: 0;
             max-width: 80%;
         }
 
         .message.assistant {
-            background: #2d2d30;
+            background: var(--message-assistant-bg);
             max-width: 100%;
         }
 
         .message.tool {
-            background: #2a2d2e;
-            border-left: 3px solid #4ec9b0;
+            background: var(--message-tool-bg);
+            border-left: 3px solid var(--accent-green);
             max-width: 100%;
         }
 
         /* 思考过程样式 */
         .message.thinking {
-            background: #2a2520;
-            border-left: 3px solid #ce9178;
+            background: var(--message-thinking-bg);
+            border-left: 3px solid var(--accent-orange);
             max-width: 100%;
         }
 
         .message.thinking .message-role {
-            color: #ce9178;
+            color: var(--accent-orange);
         }
 
         .message-role {
@@ -238,15 +341,15 @@
         }
 
         .message.user .message-role {
-            color: #4fc3f7;
+            color: var(--accent-cyan);
         }
 
         .message.assistant .message-role {
-            color: #ce9178;
+            color: var(--accent-orange);
         }
 
         .message.tool .message-role {
-            color: #4ec9b0;
+            color: var(--accent-green);
         }
 
         .message-content {
@@ -270,23 +373,23 @@
             left: 0;
             right: 0;
             height: 80px;
-            background: linear-gradient(transparent, #2d2d30);
+            background: linear-gradient(transparent, var(--message-assistant-bg));
             pointer-events: none;
         }
 
         .message.user .message-content.collapsed::after {
-            background: linear-gradient(transparent, #1e3a5f);
+            background: linear-gradient(transparent, var(--message-user-bg));
         }
 
         .message.thinking .message-content.collapsed::after {
-            background: linear-gradient(transparent, #2a2520);
+            background: linear-gradient(transparent, var(--message-thinking-bg));
         }
 
         .expand-btn {
             margin-top: 8px;
             padding: 6px 12px;
-            background: #3e3e42;
-            color: #cccccc;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
             border: none;
             border-radius: 4px;
             cursor: pointer;
@@ -295,17 +398,17 @@
         }
 
         .expand-btn:hover {
-            background: #505050;
+            background: var(--bg-hover);
         }
 
         .tool-result {
             margin-top: 12px;
             padding: 12px;
-            background: #1e1e1e;
+            background: var(--code-bg);
             border-radius: 4px;
             font-family: 'Courier New', monospace;
             font-size: 12px;
-            color: #9cdcfe;
+            color: var(--code-text);
         }
 
         /* 滚动条样式 */
@@ -315,16 +418,16 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: #1e1e1e;
+            background: var(--scrollbar-bg);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #424242;
+            background: var(--scrollbar-thumb);
             border-radius: 5px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #4e4e4e;
+            background: var(--scrollbar-thumb-hover);
         }
 
         /* 模态弹窗 */
@@ -335,7 +438,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: var(--modal-overlay);
             z-index: 1000;
             align-items: center;
             justify-content: center;
@@ -346,33 +449,35 @@
         }
 
         .modal-content {
-            background: #252526;
+            background: var(--bg-secondary);
             border-radius: 8px;
             width: 90%;
             max-width: 600px;
             max-height: 80vh;
             overflow-y: auto;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 20px var(--modal-shadow);
+            transition: background-color 0.3s ease;
         }
 
         .modal-header {
             padding: 20px;
-            border-bottom: 1px solid #3e3e42;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            transition: border-color 0.3s ease;
         }
 
         .modal-header h2 {
             font-size: 18px;
             font-weight: 600;
-            color: #cccccc;
+            color: var(--text-secondary);
         }
 
         .modal-close {
             background: none;
             border: none;
-            color: #cccccc;
+            color: var(--text-secondary);
             font-size: 24px;
             cursor: pointer;
             padding: 0;
@@ -386,7 +491,7 @@
         }
 
         .modal-close:hover {
-            background: #3e3e42;
+            background: var(--bg-tertiary);
         }
 
         .modal-body {
@@ -400,29 +505,30 @@
         .guide-section h3 {
             font-size: 16px;
             font-weight: 600;
-            color: #4fc3f7;
+            color: var(--accent-cyan);
             margin-bottom: 12px;
         }
 
         .guide-section p {
             font-size: 14px;
             line-height: 1.6;
-            color: #d4d4d4;
+            color: var(--text-primary);
             margin-bottom: 12px;
         }
 
         .guide-steps {
-            background: #1e1e1e;
+            background: var(--bg-primary);
             border-radius: 4px;
             padding: 16px;
             margin-bottom: 12px;
+            transition: background-color 0.3s ease;
         }
 
         .guide-step {
             margin-bottom: 12px;
             font-size: 14px;
             line-height: 1.6;
-            color: #d4d4d4;
+            color: var(--text-primary);
         }
 
         .guide-step:last-child {
@@ -430,21 +536,22 @@
         }
 
         .guide-step strong {
-            color: #4ec9b0;
+            color: var(--accent-green);
         }
 
         .code-box {
-            background: #1e1e1e;
-            border: 1px solid #3e3e42;
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             padding: 12px;
             font-family: 'Courier New', monospace;
             font-size: 13px;
-            color: #9cdcfe;
+            color: var(--code-text);
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 12px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .code-text {
@@ -453,7 +560,7 @@
         }
 
         .copy-btn {
-            background: #0e639c;
+            background: var(--accent-blue);
             color: white;
             border: none;
             border-radius: 4px;
@@ -465,42 +572,159 @@
         }
 
         .copy-btn:hover {
-            background: #1177bb;
+            background: var(--accent-blue-hover);
         }
 
         .copy-btn.copied {
-            background: #16825d;
+            background: var(--accent-success);
         }
 
         kbd {
-            background: #3e3e42;
-            border: 1px solid #555;
+            background: var(--kbd-bg);
+            border: 1px solid var(--kbd-border);
             border-radius: 3px;
             padding: 2px 6px;
             font-size: 12px;
             font-family: 'Courier New', monospace;
-            color: #cccccc;
+            color: var(--text-secondary);
+        }
+
+        /* Toast 通知样式 */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .toast {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .toast.toast-success {
+            border-left: 4px solid var(--accent-success);
+        }
+
+        .toast.toast-error {
+            border-left: 4px solid var(--accent-red);
+        }
+
+        .toast.toast-info {
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .toast.toast-warning {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .toast-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .toast-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .toast-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 18px;
+            line-height: 1;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+        .toast.toast-fade-out {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* 快捷键提示样式 */
+        .shortcut-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
     </style>
 </head>
 <body>
+    <!-- Toast 通知容器 -->
+    <div class="toast-container" id="toastContainer"></div>
+    
     <div class="container">
         <!-- 左侧边栏 -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <h1>
-                    <span>Claude Code Viewer</span>
-                    <span class="help-icon" onclick="showHelp()" title="How to use">?</span>
+                    <span data-i18n="app.title">Claude Code Viewer</span>
+                    <div class="header-actions">
+                        <button class="icon-btn" onclick="toggleTheme()" title="Toggle Theme" id="themeToggle">🌙</button>
+                        <button class="icon-btn" onclick="toggleLanguage()" title="Switch Language" id="langToggle">中</button>
+                        <button class="icon-btn" onclick="showHelp()" title="How to use" id="helpBtn">?</button>
+                    </div>
                 </h1>
                 <input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;">
-                <button class="upload-btn" onclick="document.getElementById('folderInput').click()">
+                <button class="upload-btn" onclick="document.getElementById('folderInput').click()" data-i18n="sidebar.uploadBtn">
                     📁 Upload Project Folder
                 </button>
+                <button class="upload-btn clipboard-btn" onclick="importFromClipboard()" data-i18n="sidebar.clipboardBtn" style="margin-top: 8px; background: var(--accent-green);">
+                    📋 Import from Clipboard
+                </button>
+                <div class="shortcut-hint" style="margin-left: 16px;">
+                    <kbd>Ctrl</kbd>+<kbd>V</kbd> <span data-i18n="sidebar.clipboardShortcut">快捷键导入</span>
+                </div>
             </div>
             <div class="session-list" id="sessionList">
                 <div class="empty-state">
                     <div class="empty-state-icon">📂</div>
-                    <div class="empty-state-text">No sessions loaded</div>
+                    <div class="empty-state-text" data-i18n="sidebar.emptyState">No sessions loaded</div>
                 </div>
             </div>
         </div>
@@ -508,16 +732,16 @@
         <!-- 右侧内容区 -->
         <div class="content">
             <div class="content-header">
-                <h2 id="contentTitle">Welcome</h2>
+                <h2 id="contentTitle" data-i18n="content.welcome">Welcome</h2>
                 <label class="thinking-toggle">
                     <input type="checkbox" id="showThinkingCheckbox" onchange="toggleThinking()">
-                    <span>Show Thinking Process</span>
+                    <span data-i18n="content.showThinking">Show Thinking Process</span>
                 </label>
             </div>
             <div class="messages-container" id="messagesContainer">
                 <div class="empty-state">
                     <div class="empty-state-icon">💬</div>
-                    <div class="empty-state-text">Select a session to view conversation</div>
+                    <div class="empty-state-text" data-i18n="content.selectSession">Select a session to view conversation</div>
                 </div>
             </div>
         </div>
@@ -527,120 +751,512 @@
     <div class="modal" id="helpModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📖 Usage Guide</h2>
+                <h2 data-i18n="help.title">📖 Usage Guide</h2>
                 <button class="modal-close" onclick="closeHelp()">&times;</button>
             </div>
             <div class="modal-body">
                 <!-- Mac用户指南 -->
                 <div class="guide-section">
-                    <h3>🍎 Mac Users</h3>
-                    <p>Finder doesn't show hidden folders (like <code>.claude</code>) by default. Here's how to access it:</p>
+                    <h3 data-i18n="help.mac.title">🍎 Mac Users</h3>
+                    <p data-i18n="help.mac.desc">Finder doesn't show hidden folders (like <code>.claude</code>) by default. Here's how to access it:</p>
 
                     <div class="guide-steps">
                         <div class="guide-step">
-                            <strong>Method 1:</strong> Use keyboard shortcut
+                            <strong data-i18n="help.mac.method1">Method 1:</strong> <span data-i18n="help.mac.method1Desc">Use keyboard shortcut</span>
                             <br>
-                            1. Click "Upload Project Folder" button
+                            1. <span data-i18n="help.mac.step1">Click "Upload Project Folder" button</span>
                             <br>
-                            2. Press <kbd>⌘ Cmd</kbd> + <kbd>⇧ Shift</kbd> + <kbd>G</kbd>
+                            2. <span data-i18n="help.mac.step2">Press</span> <kbd>⌘ Cmd</kbd> + <kbd>⇧ Shift</kbd> + <kbd>G</kbd>
                             <br>
-                            3. Paste the path below and press Enter:
+                            3. <span data-i18n="help.mac.step3">Paste the path below and press Enter:</span>
                         </div>
                     </div>
 
                     <div class="code-box">
                         <div class="code-text" id="macPath">~/.claude/projects/</div>
-                        <button class="copy-btn" onclick="copyPath('macPath', this)">Copy</button>
+                        <button class="copy-btn" onclick="copyPath('macPath', this)" data-i18n="common.copy">Copy</button>
                     </div>
 
                     <div class="guide-steps">
                         <div class="guide-step">
-                            <strong>Method 2:</strong> Show hidden files
+                            <strong data-i18n="help.mac.method2">Method 2:</strong> <span data-i18n="help.mac.method2Desc">Show hidden files</span>
                             <br>
-                            1. In Finder, press <kbd>⌘ Cmd</kbd> + <kbd>⇧ Shift</kbd> + <kbd>.</kbd> (period)
+                            1. <span data-i18n="help.mac.method2Step1">In Finder, press</span> <kbd>⌘ Cmd</kbd> + <kbd>⇧ Shift</kbd> + <kbd>.</kbd> (period)
                             <br>
-                            2. Hidden folders will become visible
+                            2. <span data-i18n="help.mac.method2Step2">Hidden folders will become visible</span>
                             <br>
-                            3. Navigate to your home folder, then find <code>.claude/projects/</code>
+                            3. <span data-i18n="help.mac.method2Step3">Navigate to your home folder, then find</span> <code>.claude/projects/</code>
                         </div>
                     </div>
                 </div>
 
                 <!-- Windows用户指南 -->
                 <div class="guide-section">
-                    <h3>🪟 Windows Users</h3>
-                    <p>Access your Claude Code history folder:</p>
+                    <h3 data-i18n="help.windows.title">🪟 Windows Users</h3>
+                    <p data-i18n="help.windows.desc">Access your Claude Code history folder:</p>
 
                     <div class="guide-steps">
                         <div class="guide-step">
-                            <strong>Method 1:</strong> Direct path
+                            <strong data-i18n="help.windows.method1">Method 1:</strong> <span data-i18n="help.windows.method1Desc">Direct path</span>
                             <br>
-                            1. Click "Upload Project Folder" button
+                            1. <span data-i18n="help.windows.step1">Click "Upload Project Folder" button</span>
                             <br>
-                            2. Press <kbd>Ctrl</kbd> + <kbd>L</kbd> in the dialog
+                            2. <span data-i18n="help.windows.step2">Press</span> <kbd>Ctrl</kbd> + <kbd>L</kbd> <span data-i18n="help.windows.step2b">in the dialog</span>
                             <br>
-                            3. Paste the path below:
+                            3. <span data-i18n="help.windows.step3">Paste the path below:</span>
                         </div>
                     </div>
 
                     <div class="code-box">
                         <div class="code-text" id="winPath">%USERPROFILE%\.claude\projects\</div>
-                        <button class="copy-btn" onclick="copyPath('winPath', this)">Copy</button>
+                        <button class="copy-btn" onclick="copyPath('winPath', this)" data-i18n="common.copy">Copy</button>
                     </div>
 
                     <div class="guide-steps">
                         <div class="guide-step">
-                            <strong>Method 2:</strong> Show hidden folders
+                            <strong data-i18n="help.windows.method2">Method 2:</strong> <span data-i18n="help.windows.method2Desc">Show hidden folders</span>
                             <br>
-                            1. Open File Explorer
+                            1. <span data-i18n="help.windows.method2Step1">Open File Explorer</span>
                             <br>
-                            2. Click View → Show → Hidden items
+                            2. <span data-i18n="help.windows.method2Step2">Click View → Show → Hidden items</span>
                             <br>
-                            3. Navigate to <code>C:\Users\YourName\.claude\projects\</code>
+                            3. <span data-i18n="help.windows.method2Step3">Navigate to</span> <code>C:\Users\YourName\.claude\projects\</code>
                         </div>
                     </div>
                 </div>
 
                 <!-- 使用说明 -->
                 <div class="guide-section">
-                    <h3>📝 How to Use</h3>
+                    <h3 data-i18n="help.usage.title">📝 How to Use</h3>
                     <div class="guide-steps">
                         <div class="guide-step">
-                            1. Click <strong>"Upload Project Folder"</strong> button
+                            1. <span data-i18n="help.usage.step1">Click</span> <strong>"Upload Project Folder"</strong>
                         </div>
                         <div class="guide-step">
-                            2. Navigate to your Claude Code project folder using one of the methods above
+                            2. <span data-i18n="help.usage.step2">Navigate to your Claude Code project folder using one of the methods above</span>
                         </div>
                         <div class="guide-step">
-                            3. Select the specific project folder (e.g., <code>ai-claude</code>)
+                            3. <span data-i18n="help.usage.step3">Select the specific project folder (e.g.,</span> <code>ai-claude</code>)
                         </div>
                         <div class="guide-step">
-                            4. Sessions will appear in the left sidebar
+                            4. <span data-i18n="help.usage.step4">Sessions will appear in the left sidebar</span>
                         </div>
                         <div class="guide-step">
-                            5. Click any session to view the conversation history
+                            5. <span data-i18n="help.usage.step5">Click any session to view the conversation history</span>
                         </div>
                     </div>
                 </div>
 
+                <!-- 快捷键 -->
+                <div class="guide-section">
+                    <h3 data-i18n="help.shortcuts.title">⌨️ Keyboard Shortcuts</h3>
+                    <p>• <kbd>Ctrl</kbd>+<kbd>V</kbd> / <kbd>Cmd</kbd>+<kbd>V</kbd> <span data-i18n="help.shortcuts.clipboard">Import from clipboard</span></p>
+                    <p>• <kbd>Esc</kbd> <span data-i18n="help.shortcuts.escape">Close dialogs</span></p>
+                </div>
+                
                 <!-- 注意事项 -->
                 <div class="guide-section">
-                    <h3>⚠️ Notes</h3>
-                    <p>• This app runs entirely in your browser - your data never leaves your computer</p>
-                    <p>• Only <code>.jsonl</code> files will be loaded (agent files are automatically filtered)</p>
-                    <p>• Large conversations may take a few seconds to load</p>
+                    <h3 data-i18n="help.notes.title">⚠️ Notes</h3>
+                    <p>• <span data-i18n="help.notes.note1">This app runs entirely in your browser - your data never leaves your computer</span></p>
+                    <p>• <span data-i18n="help.notes.note2">Only</span> <code>.jsonl</code> <span data-i18n="help.notes.note2b">files will be loaded (agent files are automatically filtered)</span></p>
+                    <p>• <span data-i18n="help.notes.note3">Large conversations may take a few seconds to load</span></p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // 全局状态
+        // ==================== 主题系统 ====================
+        const theme = {
+            // 当前主题
+            currentTheme: 'dark',
+            
+            // 默认主题
+            defaultTheme: 'dark',
+            
+            // 设置主题
+            setTheme(themeName) {
+                this.currentTheme = themeName;
+                document.documentElement.setAttribute('data-theme', themeName);
+                this.updateToggleBtn();
+                this.saveThemePreference();
+            },
+            
+            // 切换主题
+            toggleTheme() {
+                const newTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
+                this.setTheme(newTheme);
+            },
+            
+            // 更新切换按钮
+            updateToggleBtn() {
+                const btn = document.getElementById('themeToggle');
+                if (btn) {
+                    btn.textContent = this.currentTheme === 'dark' ? '🌙' : '☀️';
+                    btn.title = this.currentTheme === 'dark' ? '切换到亮色模式' : 'Switch to Dark Mode';
+                }
+            },
+            
+            // 保存主题偏好
+            saveThemePreference() {
+                try {
+                    localStorage.setItem('claude-viewer-theme', this.currentTheme);
+                } catch (e) {
+                    // 存储不可用时忽略
+                }
+            },
+            
+            // 加载主题偏好
+            loadThemePreference() {
+                try {
+                    const saved = localStorage.getItem('claude-viewer-theme');
+                    if (saved) {
+                        this.currentTheme = saved;
+                    }
+                } catch (e) {
+                    // 存储不可用时使用默认主题
+                }
+            },
+            
+            // 初始化
+            init() {
+                this.loadThemePreference();
+                this.setTheme(this.currentTheme);
+            }
+        };
+
+        // 切换主题的全局函数
+        function toggleTheme() {
+            theme.toggleTheme();
+        }
+
+        // ==================== 国际化系统 ====================
+        const i18n = {
+            // 当前语言
+            currentLang: 'zh',
+            
+            // 默认语言
+            defaultLang: 'zh',
+            
+            // 语言资源
+            resources: {
+                zh: {
+                    // 应用标题
+                    'app.title': 'Claude Code Viewer',
+                    
+                    // 侧边栏
+                    'sidebar.uploadBtn': '📁 上传项目文件夹',
+                    'sidebar.clipboardBtn': '📋 从剪贴板导入',
+                    'sidebar.emptyState': '暂无会话记录',
+                    'sidebar.questions': '个问题',
+                    
+                    // 内容区
+                    'content.welcome': '欢迎',
+                    'content.showThinking': '显示思考过程',
+                    'content.selectSession': '选择会话以查看对话内容',
+                    'content.noMessages': '暂无消息显示',
+                    
+                    // 消息角色
+                    'message.thinking': '思考',
+                    'message.answer': '回答',
+                    'message.toolCall': '工具调用',
+                    'message.toolResult': '工具结果',
+                    'message.user': '用户',
+                    'message.assistant': '助手',
+                    
+                    // 消息操作
+                    'message.expand': '展开全部 ▼',
+                    'message.collapse': '收起 ▲',
+                    
+                    // 时间显示
+                    'time.yesterday': '昨天',
+                    'time.weekdays': ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
+                    
+                    // 帮助弹窗
+                    'help.title': '📖 使用指南',
+                    
+                    // Mac用户
+                    'help.mac.title': '🍎 Mac 用户',
+                    'help.mac.desc': 'Finder 默认不显示隐藏文件夹（如 <code>.claude</code>）。以下是访问方法：',
+                    'help.mac.method1': '方法一：',
+                    'help.mac.method1Desc': '使用快捷键',
+                    'help.mac.step1': '点击"上传项目文件夹"按钮',
+                    'help.mac.step2': '按下',
+                    'help.mac.step3': '粘贴下方路径并回车：',
+                    'help.mac.method2': '方法二：',
+                    'help.mac.method2Desc': '显示隐藏文件',
+                    'help.mac.method2Step1': '在 Finder 中按下',
+                    'help.mac.method2Step2': '隐藏文件夹将变为可见',
+                    'help.mac.method2Step3': '导航到主文件夹，然后找到',
+                    
+                    // Windows用户
+                    'help.windows.title': '🪟 Windows 用户',
+                    'help.windows.desc': '访问 Claude Code 历史记录文件夹：',
+                    'help.windows.method1': '方法一：',
+                    'help.windows.method1Desc': '直接路径',
+                    'help.windows.step1': '点击"上传项目文件夹"按钮',
+                    'help.windows.step2': '按下',
+                    'help.windows.step2b': '在对话框中',
+                    'help.windows.step3': '粘贴下方路径：',
+                    'help.windows.method2': '方法二：',
+                    'help.windows.method2Desc': '显示隐藏文件夹',
+                    'help.windows.method2Step1': '打开文件资源管理器',
+                    'help.windows.method2Step2': '点击查看 → 显示 → 隐藏的项目',
+                    'help.windows.method2Step3': '导航到',
+                    
+                    // 使用说明
+                    'help.usage.title': '📝 如何使用',
+                    'help.usage.step1': '点击',
+                    'help.usage.step2': '使用上述方法之一导航到 Claude Code 项目文件夹',
+                    'help.usage.step3': '选择特定的项目文件夹（如',
+                    'help.usage.step4': '会话将显示在左侧边栏',
+                    'help.usage.step5': '点击任意会话查看对话历史',
+                    
+                    // 注意事项
+                    'help.notes.title': '⚠️ 注意事项',
+                    'help.notes.note1': '此应用完全在浏览器中运行 - 您的数据不会离开您的电脑',
+                    'help.notes.note2': '仅',
+                    'help.notes.note2b': '文件会被加载（agent 文件会自动过滤）',
+                    'help.notes.note3': '大型对话可能需要几秒钟加载',
+                    
+                    // 快捷键
+                    'help.shortcuts.title': '⌨️ 快捷键',
+                    'help.shortcuts.clipboard': '从剪贴板导入',
+                    'help.shortcuts.escape': '关闭对话框',
+                    
+                    // 通用
+                    'common.copy': '复制',
+                    'common.copied': '已复制！',
+                    'common.error': '错误',
+                    'common.success': '成功',
+                    'common.info': '提示',
+                    
+                    // 错误提示
+                    'error.noFiles': '所选文件夹中未找到 .jsonl 文件',
+                    'sidebar.clipboardBtn': '📋 从剪贴板导入 (Ctrl+V)',
+                    'sidebar.clipboardShortcut': '或使用快捷键快速导入',
+                    'error.clipboard.readFailed': '无法读取剪贴板内容',
+                    'error.clipboard.permissionDenied': '剪贴板访问权限被拒绝',
+                    'error.clipboard.notSupported': '您的浏览器不支持剪贴板读取功能',
+                    'error.clipboard.notSecure': '剪贴板读取需要安全上下文（HTTPS）',
+                    'error.clipboard.empty': '剪贴板为空',
+                    'error.clipboard.invalidFormat': '剪贴板内容格式无效，无法解析为会话数据',
+                    'error.clipboard.parseFailed': '剪贴板内容解析失败',
+                    'success.clipboard.import': '成功从剪贴板导入 {count} 个会话',
+                    'info.clipboard.useAlternative': '请使用文件上传或手动粘贴内容',
+                    'info.clipboard.shortcutUsed': '检测到快捷键导入',
+                    'info.clipboard.processing': '正在处理剪贴板内容...'
+                },
+                en: {
+                    // App title
+                    'app.title': 'Claude Code Viewer',
+                    
+                    // Sidebar
+                    'sidebar.uploadBtn': '📁 Upload Project Folder',
+                    'sidebar.clipboardBtn': '📋 Import from Clipboard',
+                    'sidebar.emptyState': 'No sessions loaded',
+                    'sidebar.questions': 'questions',
+                    
+                    // Content area
+                    'content.welcome': 'Welcome',
+                    'content.showThinking': 'Show Thinking Process',
+                    'content.selectSession': 'Select a session to view conversation',
+                    'content.noMessages': 'No messages to display',
+                    
+                    // Message roles
+                    'message.thinking': 'THINKING',
+                    'message.answer': 'ANSWER',
+                    'message.toolCall': 'TOOL CALL',
+                    'message.toolResult': 'TOOL RESULT',
+                    'message.user': 'USER',
+                    'message.assistant': 'ASSISTANT',
+                    
+                    // Message actions
+                    'message.expand': 'Expand ▼',
+                    'message.collapse': 'Collapse ▲',
+                    
+                    // Time display
+                    'time.yesterday': 'Yesterday',
+                    'time.weekdays': ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                    
+                    // Help modal
+                    'help.title': '📖 Usage Guide',
+                    
+                    // Mac users
+                    'help.mac.title': '🍎 Mac Users',
+                    'help.mac.desc': 'Finder doesn\'t show hidden folders (like <code>.claude</code>) by default. Here\'s how to access it:',
+                    'help.mac.method1': 'Method 1:',
+                    'help.mac.method1Desc': 'Use keyboard shortcut',
+                    'help.mac.step1': 'Click "Upload Project Folder" button',
+                    'help.mac.step2': 'Press',
+                    'help.mac.step3': 'Paste the path below and press Enter:',
+                    'help.mac.method2': 'Method 2:',
+                    'help.mac.method2Desc': 'Show hidden files',
+                    'help.mac.method2Step1': 'In Finder, press',
+                    'help.mac.method2Step2': 'Hidden folders will become visible',
+                    'help.mac.method2Step3': 'Navigate to your home folder, then find',
+                    
+                    // Windows users
+                    'help.windows.title': '🪟 Windows Users',
+                    'help.windows.desc': 'Access your Claude Code history folder:',
+                    'help.windows.method1': 'Method 1:',
+                    'help.windows.method1Desc': 'Direct path',
+                    'help.windows.step1': 'Click "Upload Project Folder" button',
+                    'help.windows.step2': 'Press',
+                    'help.windows.step2b': 'in the dialog',
+                    'help.windows.step3': 'Paste the path below:',
+                    'help.windows.method2': 'Method 2:',
+                    'help.windows.method2Desc': 'Show hidden folders',
+                    'help.windows.method2Step1': 'Open File Explorer',
+                    'help.windows.method2Step2': 'Click View → Show → Hidden items',
+                    'help.windows.method2Step3': 'Navigate to',
+                    
+                    // Usage
+                    'help.usage.title': '📝 How to Use',
+                    'help.usage.step1': 'Click',
+                    'help.usage.step2': 'Navigate to your Claude Code project folder using one of the methods above',
+                    'help.usage.step3': 'Select the specific project folder (e.g.,',
+                    'help.usage.step4': 'Sessions will appear in the left sidebar',
+                    'help.usage.step5': 'Click any session to view the conversation history',
+                    
+                    // Notes
+                    'help.notes.title': '⚠️ Notes',
+                    'help.notes.note1': 'This app runs entirely in your browser - your data never leaves your computer',
+                    'help.notes.note2': 'Only',
+                    'help.notes.note2b': 'files will be loaded (agent files are automatically filtered)',
+                    'help.notes.note3': 'Large conversations may take a few seconds to load',
+                    
+                    // Keyboard Shortcuts
+                    'help.shortcuts.title': '⌨️ Keyboard Shortcuts',
+                    'help.shortcuts.clipboard': 'Import from clipboard',
+                    'help.shortcuts.escape': 'Close dialogs',
+                    
+                    // Common
+                    'common.copy': 'Copy',
+                    'common.copied': 'Copied!',
+                    'common.error': 'Error',
+                    'common.success': 'Success',
+                    'common.info': 'Info',
+                    
+                    // Clipboard
+                    'sidebar.clipboardBtn': '📋 Import from Clipboard (Ctrl+V)',
+                    'sidebar.clipboardShortcut': 'or use shortcut to import',
+                    'error.copyFailed': 'Failed to copy to clipboard',
+                    'error.clipboard.readFailed': 'Failed to read clipboard content',
+                    'error.clipboard.permissionDenied': 'Clipboard access permission denied',
+                    'error.clipboard.notSupported': 'Your browser does not support clipboard reading',
+                    'error.clipboard.notSecure': 'Clipboard reading requires a secure context (HTTPS)',
+                    'error.clipboard.empty': 'Clipboard is empty',
+                    'error.clipboard.invalidFormat': 'Clipboard content format is invalid, cannot parse as session data',
+                    'error.clipboard.parseFailed': 'Failed to parse clipboard content',
+                    'success.clipboard.import': 'Successfully imported {count} session(s) from clipboard',
+                    'info.clipboard.useAlternative': 'Please use file upload or manually paste content',
+                    'info.clipboard.shortcutUsed': 'Shortcut import detected',
+                    'info.clipboard.processing': 'Processing clipboard content...'
+                }
+            },
+            
+            // 获取翻译
+            t(key, fallback) {
+                const lang = this.currentLang;
+                const langRes = this.resources[lang];
+                const defaultRes = this.resources[this.defaultLang];
+                
+                // 先尝试当前语言
+                if (langRes && langRes[key] !== undefined) {
+                    return langRes[key];
+                }
+                
+                // 回退到默认语言
+                if (defaultRes && defaultRes[key] !== undefined) {
+                    return defaultRes[key];
+                }
+                
+                // 最后回退到传入的默认值或键名
+                return fallback !== undefined ? fallback : key;
+            },
+            
+            // 设置语言
+            setLang(lang) {
+                if (this.resources[lang]) {
+                    this.currentLang = lang;
+                    this.updateUI();
+                    this.saveLangPreference();
+                }
+            },
+            
+            // 切换语言
+            toggleLang() {
+                const newLang = this.currentLang === 'zh' ? 'en' : 'zh';
+                this.setLang(newLang);
+            },
+            
+            // 更新UI
+            updateUI() {
+                // 更新所有带 data-i18n 属性的元素
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    const translation = this.t(key);
+                    el.textContent = translation;
+                });
+                
+                // 更新语言切换按钮
+                const langToggle = document.getElementById('langToggle');
+                if (langToggle) {
+                    langToggle.textContent = this.currentLang === 'zh' ? 'EN' : '中';
+                    langToggle.title = this.currentLang === 'zh' ? 'Switch to English' : '切换到中文';
+                }
+                
+                // 重新渲染会话列表
+                if (state.sessions.length > 0) {
+                    renderSessionList();
+                }
+                
+                // 重新渲染当前消息（如果有）
+                if (state.currentSession) {
+                    renderMessages();
+                }
+            },
+            
+            // 保存语言偏好
+            saveLangPreference() {
+                try {
+                    localStorage.setItem('claude-viewer-lang', this.currentLang);
+                } catch (e) {
+                    // 存储不可用时忽略
+                }
+            },
+            
+            // 加载语言偏好
+            loadLangPreference() {
+                try {
+                    const saved = localStorage.getItem('claude-viewer-lang');
+                    if (saved && this.resources[saved]) {
+                        this.currentLang = saved;
+                    }
+                } catch (e) {
+                    // 存储不可用时使用默认语言
+                }
+            },
+            
+            // 初始化
+            init() {
+                this.loadLangPreference();
+                this.updateUI();
+            }
+        };
+
+        // 切换语言的全局函数
+        function toggleLanguage() {
+            i18n.toggleLang();
+        }
+
+        // ==================== 应用状态 ====================
         const state = {
             sessions: [],
             currentSession: null,
-            showThinking: false,  // 是否显示思考过程
-            messageIdCounter: 0   // 消息ID计数器
+            showThinking: false,
+            messageIdCounter: 0
         };
 
         // 文件夹上传处理
@@ -649,7 +1265,7 @@
             const jsonlFiles = files.filter(f => f.name.endsWith('.jsonl') && !f.name.startsWith('agent-'));
 
             if (jsonlFiles.length === 0) {
-                alert('No .jsonl files found in the selected folder');
+                alert(i18n.t('error.noFiles'));
                 return;
             }
 
@@ -732,7 +1348,7 @@
                 listEl.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">📂</div>
-                        <div class="empty-state-text">No sessions loaded</div>
+                        <div class="empty-state-text" data-i18n="sidebar.emptyState">${i18n.t('sidebar.emptyState')}</div>
                     </div>
                 `;
                 return;
@@ -744,7 +1360,7 @@
                 return `
                     <div class="session-item" onclick="selectSession(${index})">
                         <div class="session-id">${session.id}</div>
-                        <div class="session-time">${userQuestionCount} questions</div>
+                        <div class="session-time">${userQuestionCount} ${i18n.t('sidebar.questions')}</div>
                     </div>
                 `;
             }).join('');
@@ -772,7 +1388,7 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">💬</div>
-                        <div class="empty-state-text">Select a session to view conversation</div>
+                        <div class="empty-state-text" data-i18n="content.selectSession">${i18n.t('content.selectSession')}</div>
                     </div>
                 `;
                 return;
@@ -788,7 +1404,7 @@
                 .filter(html => html !== null)  // 过滤空内容
                 .join('');
 
-            container.innerHTML = messagesHTML || '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">No messages to display</div></div>';
+            container.innerHTML = messagesHTML || `<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">${i18n.t('content.noMessages')}</div></div>`;
 
             // 滚动到顶部
             container.scrollTop = 0;
@@ -816,7 +1432,7 @@
                         processItems.push({
                             type: 'thinking',
                             content: c.thinking,
-                            label: 'THINKING'
+                            label: i18n.t('message.thinking')
                         });
                     } else if (c.type === 'text' && c.text) {
                         textParts.push(c.text);
@@ -824,7 +1440,7 @@
                         processItems.push({
                             type: 'tool_use',
                             content: `Tool: ${c.name}\n${JSON.stringify(c.input, null, 2)}`,
-                            label: 'TOOL CALL'
+                            label: i18n.t('message.toolCall')
                         });
                     } else if (c.type === 'tool_result') {
                         const resultContent = typeof c.content === 'string'
@@ -833,7 +1449,7 @@
                         processItems.push({
                             type: 'tool_result',
                             content: `Result:\n${resultContent}`,
-                            label: 'TOOL RESULT'
+                            label: i18n.t('message.toolResult')
                         });
                     }
                 }
@@ -844,7 +1460,7 @@
                         const msgId = state.messageIdCounter++;
                         const needCollapse = shouldCollapse(item.content);
                         const collapsedClass = needCollapse ? 'collapsed' : '';
-                        const expandBtn = needCollapse ? `<button class="expand-btn" id="btn-${msgId}" onclick="toggleExpand(${msgId})">展开全部 ▼</button>` : '';
+                        const expandBtn = needCollapse ? `<button class="expand-btn" id="btn-${msgId}" onclick="toggleExpand(${msgId})">${i18n.t('message.expand')}</button>` : '';
 
                         result.push(`
                             <div class="message thinking">
@@ -865,12 +1481,12 @@
                     const msgId = state.messageIdCounter++;
                     const needCollapse = shouldCollapse(mainContent);
                     const collapsedClass = needCollapse ? 'collapsed' : '';
-                    const expandBtn = needCollapse ? `<button class="expand-btn" id="btn-${msgId}" onclick="toggleExpand(${msgId})">展开全部 ▼</button>` : '';
+                    const expandBtn = needCollapse ? `<button class="expand-btn" id="btn-${msgId}" onclick="toggleExpand(${msgId})">${i18n.t('message.expand')}</button>` : '';
 
                     result.push(`
                         <div class="message assistant">
                             <div class="message-role">
-                                <span>ANSWER</span>
+                                <span>${i18n.t('message.answer')}</span>
                                 <span class="message-timestamp">${formatTimestamp(msg.timestamp)}</span>
                             </div>
                             <div class="message-content ${collapsedClass}" id="content-${msgId}">${escapeHtml(mainContent)}</div>
@@ -888,8 +1504,12 @@
             let messageClass = role;
 
             if (msg.type === 'tool' || msg.name) {
-                roleLabel = 'TOOL CALL';
+                roleLabel = i18n.t('message.toolCall');
                 messageClass = 'tool';
+            } else if (role === 'user') {
+                roleLabel = i18n.t('message.user');
+            } else if (role === 'assistant') {
+                roleLabel = i18n.t('message.assistant');
             }
 
             // 提取内容
@@ -919,7 +1539,7 @@
             const msgId = state.messageIdCounter++;
             const needCollapse = shouldCollapse(content);
             const collapsedClass = needCollapse ? 'collapsed' : '';
-            const expandBtn = needCollapse ? `<button class="expand-btn" id="btn-${msgId}" onclick="toggleExpand(${msgId})">展开全部 ▼</button>` : '';
+            const expandBtn = needCollapse ? `<button class="expand-btn" id="btn-${msgId}" onclick="toggleExpand(${msgId})">${i18n.t('message.expand')}</button>` : '';
 
             return `
                 <div class="message ${messageClass}">
@@ -944,17 +1564,18 @@
             const diffHours = Math.floor(diffMs / 3600000);
             const diffDays = Math.floor(diffMs / 86400000);
 
+            const weekdays = i18n.t('time.weekdays');
+
             // 今天：显示时:分
             if (diffDays === 0) {
                 return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
             }
             // 昨天
             else if (diffDays === 1) {
-                return '昨天 ' + date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                return i18n.t('time.yesterday') + ' ' + date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
             }
             // 7天内：显示星期
             else if (diffDays < 7) {
-                const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
                 return weekdays[date.getDay()] + ' ' + date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
             }
             // 更早：显示完整日期
@@ -984,10 +1605,10 @@
                 const isCollapsed = contentEl.classList.contains('collapsed');
                 if (isCollapsed) {
                     contentEl.classList.remove('collapsed');
-                    btnEl.textContent = '收起 ▲';
+                    btnEl.textContent = i18n.t('message.collapse');
                 } else {
                     contentEl.classList.add('collapsed');
-                    btnEl.textContent = '展开全部 ▼';
+                    btnEl.textContent = i18n.t('message.expand');
                 }
             }
         }
@@ -1017,9 +1638,27 @@
         });
 
         // ESC键关闭弹窗
+        // 全局键盘快捷键监听器
         document.addEventListener('keydown', (e) => {
+            // Escape 关闭帮助
             if (e.key === 'Escape') {
                 closeHelp();
+            }
+            
+            // Ctrl+V 或 Cmd+V 快捷键导入剪贴板
+            if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+                // 检查是否在输入框、文本域或可编辑元素中
+                const activeElement = document.activeElement;
+                const isEditableElement = 
+                    activeElement.tagName === 'INPUT' ||
+                    activeElement.tagName === 'TEXTAREA' ||
+                    activeElement.isContentEditable;
+                
+                // 如果不在可编辑元素中，则触发剪贴板导入
+                if (!isEditableElement) {
+                    e.preventDefault(); // 阻止默认粘贴行为
+                    importFromClipboard(true); // 传入 true 表示通过快捷键触发
+                }
             }
         });
 
@@ -1028,8 +1667,8 @@
             const text = document.getElementById(elementId).textContent;
             navigator.clipboard.writeText(text).then(() => {
                 // 更新按钮状态
-                const originalText = button.textContent;
-                button.textContent = 'Copied!';
+                const originalText = i18n.t('common.copy');
+                button.textContent = i18n.t('common.copied');
                 button.classList.add('copied');
 
                 setTimeout(() => {
@@ -1038,14 +1677,563 @@
                 }, 2000);
             }).catch(err => {
                 console.error('Failed to copy:', err);
-                alert('Failed to copy to clipboard');
+                alert(i18n.t('error.copyFailed'));
             });
         }
 
-        // 首次加载显示帮助提示
+        // ==================== 剪贴板导入功能 ====================
+        
+        /**
+         * 检查剪贴板API是否可用
+         */
+        function checkClipboardSupport() {
+            // 检查是否在安全上下文中
+            if (!window.isSecureContext) {
+                return {
+                    supported: false,
+                    reason: 'notSecure'
+                };
+            }
+            
+            // 检查Clipboard API是否可用
+            if (!navigator.clipboard || !navigator.clipboard.readText) {
+                return {
+                    supported: false,
+                    reason: 'notSupported'
+                };
+            }
+            
+            return {
+                supported: true
+            };
+        }
+        
+        /**
+         * 显示错误提示
+         */
+        // ==================== Toast 通知系统 ====================
+        
+        /**
+         * 显示 Toast 通知
+         * @param {string} type - 通知类型: 'success', 'error', 'info', 'warning'
+         * @param {string} title - 标题
+         * @param {string} message - 消息内容
+         * @param {number} duration - 显示时长（毫秒），默认 4000
+         */
+        function showToast(type, title, message, duration = 4000) {
+            const container = document.getElementById('toastContainer');
+            
+            // 创建 toast 元素
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            // 根据类型选择图标
+            const icons = {
+                success: '✓',
+                error: '✕',
+                info: 'ℹ',
+                warning: '⚠'
+            };
+            
+            toast.innerHTML = `
+                <span class="toast-icon">${icons[type]}</span>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    ${message ? `<div class="toast-message">${message}</div>` : ''}
+                </div>
+                <button class="toast-close" onclick="closeToast(this.parentElement)">×</button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // 自动关闭
+            if (duration > 0) {
+                setTimeout(() => {
+                    closeToast(toast);
+                }, duration);
+            }
+            
+            return toast;
+        }
+        
+        /**
+         * 关闭 Toast 通知
+         */
+        function closeToast(toast) {
+            if (!toast || toast.classList.contains('toast-fade-out')) return;
+            
+            toast.classList.add('toast-fade-out');
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.parentElement.removeChild(toast);
+                }
+            }, 300);
+        }
+        
+        /**
+         * 显示剪贴板错误通知
+         */
+        function showClipboardError(errorKey, additionalInfo = '') {
+            const message = i18n.t(errorKey) + (additionalInfo ? `\n${additionalInfo}` : '');
+            showToast('error', i18n.t('common.error'), message, 6000);
+        }
+        
+        /**
+         * 显示剪贴板成功通知
+         */
+        function showClipboardSuccess(title, message = '') {
+            showToast('success', title, message, 4000);
+        }
+        
+        /**
+         * 显示剪贴板信息通知
+         */
+        function showClipboardInfo(title, message = '') {
+            showToast('info', title, message, 3000);
+        }
+        
+        /**
+         * 检测是否是Claude Code CLI终端输出格式
+         */
+        function isClaudeCLIFormat(content) {
+            // Claude CLI格式的特征：
+            // 1. 包含 ❯ 符号（用户输入提示符）
+            // 2. 包含 ⏺ 符号（Claude回答标记）
+            // 3. 或者包含特定的工具调用模式如 "Searched for", "Read 1 file"
+            return content.includes('❯') || 
+                   content.includes('⏺') || 
+                   content.includes('⎿') ||
+                   /Searched for \d+ pattern/.test(content) ||
+                   /Read \d+ file/.test(content);
+        }
+        
+        /**
+         * 解析Claude Code CLI终端输出格式
+         */
+        function parseClaudeCLIFormat(content) {
+            const lines = content.split('\n');
+            const messages = [];
+            let currentMessage = null;
+            let currentContent = [];
+            let currentRole = null;
+            let messageId = 0;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const trimmedLine = line.trim();
+                
+                // 跳过空行
+                if (!trimmedLine) {
+                    if (currentContent.length > 0) {
+                        currentContent.push('');
+                    }
+                    continue;
+                }
+                
+                // 检测用户输入（以 ❯ 开头）
+                if (trimmedLine.startsWith('❯')) {
+                    // 保存之前的消息
+                    if (currentMessage && currentContent.length > 0) {
+                        currentMessage.content = currentContent.join('\n').trim();
+                        if (currentMessage.content) {
+                            messages.push(currentMessage);
+                        }
+                    }
+                    
+                    // 开始新的用户消息
+                    currentRole = 'user';
+                    currentMessage = {
+                        role: 'user',
+                        content: ''
+                    };
+                    currentContent = [trimmedLine.substring(1).trim()];
+                    continue;
+                }
+                
+                // 检测Claude回答（以 ⏺ 开头）
+                if (trimmedLine.startsWith('⏺')) {
+                    // 保存之前的消息
+                    if (currentMessage && currentContent.length > 0) {
+                        currentMessage.content = currentContent.join('\n').trim();
+                        if (currentMessage.content) {
+                            messages.push(currentMessage);
+                        }
+                    }
+                    
+                    // 开始新的助手消息
+                    currentRole = 'assistant';
+                    currentMessage = {
+                        role: 'assistant',
+                        content: ''
+                    };
+                    currentContent = [trimmedLine.substring(1).trim()];
+                    continue;
+                }
+                
+                // 检测状态行（⎿ 开头）- 作为当前消息的元数据
+                if (trimmedLine.startsWith('⎿')) {
+                    // 这是状态信息，可以作为当前消息的一部分
+                    if (currentMessage) {
+                        currentContent.push(`[状态] ${trimmedLine.substring(1).trim()}`);
+                    }
+                    continue;
+                }
+                
+                // 检测工具调用结果（✻ 开头）- 处理时间信息
+                if (trimmedLine.startsWith('✻')) {
+                    if (currentMessage) {
+                        currentContent.push(`[处理时间] ${trimmedLine.substring(1).trim()}`);
+                    }
+                    continue;
+                }
+                
+                // 检测工具调用信息
+                if (/^Searched for \d+ pattern/.test(trimmedLine) ||
+                    /^Read \d+ file/.test(trimmedLine) ||
+                    /^Bash\(/.test(trimmedLine)) {
+                    // 这是一个工具调用，创建tool消息
+                    if (currentMessage && currentContent.length > 0) {
+                        currentMessage.content = currentContent.join('\n').trim();
+                        if (currentMessage.content) {
+                            messages.push(currentMessage);
+                        }
+                    }
+                    
+                    currentMessage = {
+                        role: 'tool',
+                        type: 'tool',
+                        name: 'Tool Call',
+                        content: trimmedLine
+                    };
+                    currentContent = [trimmedLine];
+                    continue;
+                }
+                
+                // 检测Agent信息
+                if (trimmedLine.includes('Agent(')) {
+                    if (currentMessage && currentContent.length > 0) {
+                        currentMessage.content = currentContent.join('\n').trim();
+                        if (currentMessage.content) {
+                            messages.push(currentMessage);
+                        }
+                    }
+                    
+                    currentMessage = {
+                        role: 'tool',
+                        type: 'tool',
+                        name: 'Agent',
+                        content: trimmedLine
+                    };
+                    currentContent = [trimmedLine];
+                    continue;
+                }
+                
+                // 检测Update信息
+                if (trimmedLine.startsWith('Update(') || trimmedLine.startsWith('⏺ Update(')) {
+                    if (currentMessage && currentContent.length > 0) {
+                        currentMessage.content = currentContent.join('\n').trim();
+                        if (currentMessage.content) {
+                            messages.push(currentMessage);
+                        }
+                    }
+                    
+                    currentMessage = {
+                        role: 'tool',
+                        type: 'tool',
+                        name: 'File Update',
+                        content: trimmedLine
+                    };
+                    currentContent = [trimmedLine];
+                    continue;
+                }
+                
+                // 其他行添加到当前消息
+                if (currentMessage) {
+                    currentContent.push(line);
+                } else if (trimmedLine) {
+                    // 如果还没有开始任何消息，创建一个助手消息
+                    currentMessage = {
+                        role: 'assistant',
+                        content: ''
+                    };
+                    currentContent = [line];
+                }
+            }
+            
+            // 保存最后一个消息
+            if (currentMessage && currentContent.length > 0) {
+                currentMessage.content = currentContent.join('\n').trim();
+                if (currentMessage.content) {
+                    messages.push(currentMessage);
+                }
+            }
+            
+            // 如果没有解析出任何消息，尝试按简单文本处理
+            if (messages.length === 0 && content.trim()) {
+                messages.push({
+                    role: 'user',
+                    content: content.trim()
+                });
+            }
+            
+            return messages;
+        }
+
+        /**
+         * 尝试解析剪贴板内容为会话数据
+         * 支持多种格式：
+         * 1. 单个JSON对象（会话数组）
+         * 2. JSONL格式（每行一个JSON对象）
+         * 3. JSON数组
+         * 4. Claude Code CLI终端输出格式
+         */
+        function parseClipboardContent(content) {
+            const trimmedContent = content.trim();
+            
+            if (!trimmedContent) {
+                throw new Error('empty');
+            }
+            
+            // 尝试解析为JSON数组
+            try {
+                const parsed = JSON.parse(trimmedContent);
+                
+                // 如果是数组
+                if (Array.isArray(parsed)) {
+                    // 检查是否是消息数组
+                    if (parsed.length > 0 && parsed[0].role) {
+                        return [{
+                            id: 'clipboard-session-' + Date.now(),
+                            fileName: 'clipboard.jsonl',
+                            messages: parsed,
+                            firstMessage: parsed[0]?.content || 'No messages'
+                        }];
+                    }
+                    // 检查是否是会话数组
+                    if (parsed.length > 0 && parsed[0].messages) {
+                        return parsed.map((session, index) => ({
+                            id: session.id || `clipboard-session-${Date.now()}-${index}`,
+                            fileName: session.fileName || `clipboard-${index}.jsonl`,
+                            messages: session.messages,
+                            firstMessage: session.messages[0]?.content || 'No messages'
+                        }));
+                    }
+                }
+                
+                // 如果是单个会话对象
+                if (parsed.messages && Array.isArray(parsed.messages)) {
+                    return [{
+                        id: parsed.id || 'clipboard-session-' + Date.now(),
+                        fileName: 'clipboard.jsonl',
+                        messages: parsed.messages,
+                        firstMessage: parsed.messages[0]?.content || 'No messages'
+                    }];
+                }
+                
+                // 如果是单个消息对象
+                if (parsed.role) {
+                    return [{
+                        id: 'clipboard-session-' + Date.now(),
+                        fileName: 'clipboard.jsonl',
+                        messages: [parsed],
+                        firstMessage: parsed.content || 'No messages'
+                    }];
+                }
+                
+                throw new Error('invalidFormat');
+                
+            } catch (parseError) {
+                // 如果JSON解析失败，尝试解析Claude Code CLI终端输出格式
+                if (parseError.message !== 'invalidFormat' && parseError.message !== 'empty') {
+                    // 检测是否是Claude Code CLI终端输出格式
+                    if (isClaudeCLIFormat(trimmedContent)) {
+                        try {
+                            const messages = parseClaudeCLIFormat(trimmedContent);
+                            if (messages.length > 0) {
+                                return [{
+                                    id: 'clipboard-session-' + Date.now(),
+                                    fileName: 'clipboard-terminal.txt',
+                                    messages: messages,
+                                    firstMessage: messages[0]?.content || 'No messages'
+                                }];
+                            }
+                        } catch (cliError) {
+                            console.warn('Failed to parse Claude CLI format:', cliError);
+                        }
+                    }
+                }
+                
+                // 如果不是CLI格式或解析失败，尝试按JSONL格式解析
+                if (parseError.message === 'invalidFormat' || parseError.message === 'empty') {
+                    throw parseError;
+                }
+                
+                // 尝试JSONL格式
+                try {
+                    const lines = trimmedContent.split('\n');
+                    const messages = [];
+                    
+                    for (const line of lines) {
+                        if (!line.trim()) continue;
+                        
+                        try {
+                            const data = JSON.parse(line);
+                            
+                            // 处理Claude Code的JSONL格式
+                            if (data.type === 'user' && data.message) {
+                                messages.push({
+                                    ...data.message,
+                                    timestamp: data.timestamp,
+                                    metadata: {
+                                        cwd: data.cwd,
+                                        gitBranch: data.gitBranch
+                                    }
+                                });
+                            } else if (data.type === 'assistant' && data.message) {
+                                messages.push({
+                                    ...data.message,
+                                    timestamp: data.timestamp
+                                });
+                            } else if (data.type === 'tool') {
+                                messages.push({
+                                    role: 'tool',
+                                    type: 'tool',
+                                    name: data.tool?.name || 'Unknown Tool',
+                                    content: data.tool?.input || data.content,
+                                    result: data.tool?.result,
+                                    timestamp: data.timestamp
+                                });
+                            } else if (data.role) {
+                                // 标准消息格式
+                                messages.push(data);
+                            }
+                        } catch (lineError) {
+                            // 跳过无法解析的行
+                            console.warn('Failed to parse line:', lineError);
+                        }
+                    }
+                    
+                    if (messages.length === 0) {
+                        throw new Error('invalidFormat');
+                    }
+                    
+                    return [{
+                        id: 'clipboard-session-' + Date.now(),
+                        fileName: 'clipboard.jsonl',
+                        messages: messages,
+                        firstMessage: messages[0]?.content || 'No messages'
+                    }];
+                    
+                } catch (jsonlError) {
+                    if (jsonlError.message === 'invalidFormat') {
+                        throw jsonlError;
+                    }
+                    throw new Error('parseFailed');
+                }
+            }
+        }
+        
+        /**
+         * 从剪贴板导入会话数据
+         * @param {boolean} isShortcut - 是否通过快捷键触发
+         */
+        async function importFromClipboard(isShortcut = false) {
+            // 检查剪贴板API支持
+            const support = checkClipboardSupport();
+            
+            if (!support.supported) {
+                const errorKey = support.reason === 'notSecure' 
+                    ? 'error.clipboard.notSecure' 
+                    : 'error.clipboard.notSupported';
+                const alternative = i18n.t('info.clipboard.useAlternative');
+                showClipboardError(errorKey, alternative);
+                return;
+            }
+            
+            // 如果是快捷键触发，显示处理中提示
+            let processingToast = null;
+            if (isShortcut) {
+                processingToast = showClipboardInfo(
+                    i18n.t('info.clipboard.shortcutUsed'),
+                    i18n.t('info.clipboard.processing')
+                );
+            }
+            
+            try {
+                // 尝试读取剪贴板内容
+                const content = await navigator.clipboard.readText();
+                
+                // 关闭处理中提示
+                if (processingToast) {
+                    closeToast(processingToast);
+                }
+                
+                // 解析内容
+                const sessions = parseClipboardContent(content);
+                
+                // 添加到现有会话列表
+                state.sessions = [...sessions, ...state.sessions];
+                
+                // 按文件名排序（最新的在前）
+                state.sessions.sort((a, b) => b.fileName.localeCompare(a.fileName));
+                
+                // 渲染会话列表
+                renderSessionList();
+                
+                // 显示成功消息
+                const successMsg = i18n.t('success.clipboard.import').replace('{count}', sessions.length);
+                showClipboardSuccess(successMsg);
+                
+                // 自动选中新导入的会话
+                if (sessions.length > 0) {
+                    selectSession(sessions[0].id);
+                }
+                
+            } catch (error) {
+                // 关闭处理中提示
+                if (processingToast) {
+                    closeToast(processingToast);
+                }
+                
+                console.error('Clipboard import failed:', error);
+                
+                let errorKey = 'error.clipboard.readFailed';
+                let additionalInfo = '';
+                
+                if (error.name === 'NotAllowedError') {
+                    errorKey = 'error.clipboard.permissionDenied';
+                    additionalInfo = i18n.t('info.clipboard.useAlternative');
+                } else if (error.message === 'empty') {
+                    errorKey = 'error.clipboard.empty';
+                } else if (error.message === 'invalidFormat') {
+                    errorKey = 'error.clipboard.invalidFormat';
+                    additionalInfo = i18n.t('info.clipboard.useAlternative');
+                } else if (error.message === 'parseFailed') {
+                    errorKey = 'error.clipboard.parseFailed';
+                    additionalInfo = i18n.t('info.clipboard.useAlternative');
+                }
+                
+                showClipboardError(errorKey, additionalInfo);
+            }
+        }
+
+        // 页面加载时初始化
         window.addEventListener('load', () => {
-            // 如果是首次访问，可以自动显示帮助
-            // showHelp();
+            // 初始化主题（带异常隔离）
+            try {
+                theme.init();
+            } catch (e) {
+                console.error('Theme initialization failed:', e);
+                // 即使失败也使用默认主题，不影响应用运行
+            }
+            
+            // 初始化国际化（带异常隔离）
+            try {
+                i18n.init();
+            } catch (e) {
+                console.error('i18n initialization failed:', e);
+                // 即使失败也使用默认语言，不影响应用运行
+            }
         });
     </script>
 </body>
